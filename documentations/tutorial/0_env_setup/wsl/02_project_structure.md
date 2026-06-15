@@ -743,4 +743,4 @@ sudo chmod 666 /dev/bus/usb/XXX/XXX
 
 ---
 
-**上一章**：[环境配置](./01-环境配置.md) | **下一章**：[代码详解](./03-代码详解.md)
+**上一章**：[环境配置](./01_environment_setup) | **下一章**：[代码详解](./03_code_walkthrough)
