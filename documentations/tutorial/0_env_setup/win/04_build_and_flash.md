@@ -4,7 +4,7 @@
 
 ---
 
-## 📋 目录
+## 目录
 
 - [构建系统介绍](#构建系统介绍)
 - [编译步骤详解](#编译步骤详解)
@@ -15,7 +15,7 @@
 
 ---
 
-## 🔨 构建系统介绍
+## 构建系统介绍
 
 ### 什么是 CMake？
 
@@ -86,7 +86,7 @@ target_link_options(STM32F1.elf PRIVATE
 
 ---
 
-## 🏗️ 编译步骤详解
+## 编译步骤详解
 
 ### 步骤概览
 
@@ -99,28 +99,30 @@ target_link_options(STM32F1.elf PRIVATE
 
 ### 步骤 1：进入项目目录
 
-```bash
-# 进入模板项目目录
-cd /path/to/ST-Forge/project/0_template
+```cmd
+:: 进入模板项目目录
+cd C:\path\to\ST-Forge\project\0_template
 ```
 
 ### 步骤 2：创建构建目录
 
-```bash
-# 创建 build 目录（用于存放编译产物）
-mkdir -p build
+```cmd
+:: 创建 build 目录（用于存放编译产物）
+mkdir build
 
-# 进入 build 目录
+:: 进入 build 目录
 cd build
 ```
 
-> **💡 提示**：使用独立的 build 目录可以保持源代码目录整洁，便于清理编译产物。
+> **提示**：使用独立的 build 目录可以保持源代码目录整洁，便于清理编译产物。
 
 ### 步骤 3：运行 CMake 配置
 
-```bash
-# 配置项目（生成 Makefile）
-cmake ..
+> **重要**：Windows 上必须指定 CMake 生成器。始终使用 `cmake -G "MinGW Makefiles" ..`。省略 `-G` 会导致 CMake 使用 Visual Studio 生成器，编译会失败。
+
+```cmd
+:: 配置项目（生成 MinGW Makefile）
+cmake -G "MinGW Makefiles" ..
 ```
 
 **预期输出**：
@@ -130,14 +132,14 @@ cmake ..
 -- The ASM compiler identification is GNU 10.3.1
 -- Detecting C compiler ABI info
 -- Detecting C compiler ABI info - done
--- Check for working C compiler: /usr/bin/arm-none-eabi-gcc - skipped
+-- Check for working C compiler: arm-none-eabi-gcc - skipped
 -- Detecting C compile features
 -- Detecting C compile features - done
 -- Detecting ASM compile features
 -- Detecting ASM compile features - done
 -- Configuring done
 -- Generating done
--- Build files have been written to: /path/to/ST-Forge/project/0_template/build
+-- Build files have been written to: C:/path/to/ST-Forge/project/0_template/build
 ```
 
 **配置过程说明**：
@@ -150,10 +152,12 @@ cmake ..
 
 ### 步骤 4：执行编译
 
-```bash
-# 编译项目
+```cmd
+:: 编译项目
 make
 ```
+
+> **提示**：如果 `make` 命令不可用，请尝试 `mingw32-make`。
 
 **预期输出**：
 
@@ -174,32 +178,35 @@ Generating STM32F1.bin
 
 ### 步骤 5：验证编译结果
 
-```bash
-# 检查生成的文件
-ls -lh STM32F1.*
+```cmd
+:: 检查生成的文件
+dir STM32F1.*
 ```
 
 **预期输出**：
 
 ```
--rwxr-xr-x 1 user user  12K Mar 30 10:00 STM32F1.bin
--rwxr-xr-x 1 user user  45K Mar 30 10:00 STM32F1.elf
--rw-r--r-- 1 user user  23K Mar 30 10:00 STM32F1.map
+2026/04/15  10:00            12,288 STM32F1.bin
+2026/04/15  10:00            46,080 STM32F1.elf
+2026/04/15  10:00            23,552 STM32F1.map
 ```
 
 ### 完整编译流程（一键执行）
 
-```bash
-# 进入项目目录
-cd /path/to/ST-Forge/project/0_template
+```cmd
+:: 进入项目目录
+cd C:\path\to\ST-Forge\project\0_template
 
-# 创建并进入 build 目录，配置并编译
-mkdir -p build && cd build && cmake .. && make
+:: 清理（可选）
+rmdir /s /q build
+
+:: 创建 build 目录，进入，配置并编译
+mkdir build && cd build && cmake -G "MinGW Makefiles" .. && make
 ```
 
 ---
 
-## 📦 输出文件说明
+## 输出文件说明
 
 编译完成后，build 目录中会生成以下文件：
 
@@ -222,17 +229,17 @@ mkdir -p build && cd build && cmake .. && make
 
 **查看 ELF 信息**：
 
-```bash
-# 查看文件头信息
+```cmd
+:: 查看文件头信息
 arm-none-eabi-readelf -h STM32F1.elf
 
-# 查看段信息
+:: 查看段信息
 arm-none-eabi-readelf -S STM32F1.elf
 
-# 查看符号表
+:: 查看符号表
 arm-none-eabi-nm STM32F1.elf
 
-# 反汇编
+:: 反汇编
 arm-none-eabi-objdump -d STM32F1.elf > disassembly.txt
 ```
 
@@ -247,8 +254,8 @@ arm-none-eabi-objdump -d STM32F1.elf > disassembly.txt
 
 **生成方式**（由 CMakeLists.txt 自动执行）：
 
-```bash
-# 从 ELF 生成 BIN
+```cmd
+:: 从 ELF 生成 BIN
 arm-none-eabi-objcopy -O binary STM32F1.elf STM32F1.bin
 ```
 
@@ -264,18 +271,18 @@ arm-none-eabi-objcopy -O binary STM32F1.elf STM32F1.bin
 
 **查看 Map 文件**：
 
-```bash
-# 查看内存使用摘要
-grep -A 20 "Memory Configuration" STM32F1.map
+```cmd
+:: 在 Map 文件中搜索内存配置信息
+findstr "Memory Configuration" STM32F1.map
 
-# 查看特定符号地址
-grep "main" STM32F1.map
+:: 查看特定符号地址
+findstr "main" STM32F1.map
 ```
 
 ### 代码大小分析
 
-```bash
-# 查看各段大小
+```cmd
+:: 查看各段大小
 arm-none-eabi-size --format=berkeley STM32F1.elf
 ```
 
@@ -293,12 +300,12 @@ arm-none-eabi-size --format=berkeley STM32F1.elf
 | **bss** | 未初始化数据段 | RAM |
 | **dec** | 十进制总大小 | - |
 
-**Flash 占用** = text + data  
+**Flash 占用** = text + data
 **RAM 占用** = data + bss
 
 ---
 
-## 🔥 烧录步骤详解
+## 烧录步骤详解
 
 ### 硬件连接
 
@@ -314,9 +321,13 @@ ST-Link V2          Blue Pill (STM32F103C8T6)
 └─────────┘         └──────────────┘
 ```
 
-> **⚠️ 注意**：
+> **注意**：
 > - 3.3V 引脚仅在开发板未通过 USB 供电时连接
 > - 确保 Blue Pill 的 BOOT0 跳线设置为 0（正常启动模式）
+
+### USB 权限
+
+Windows 上无需手动设置 USB 权限。ST-Link 驱动（STSW-LINK009）会处理设备访问。如果烧录失败出现"未找到设备"，请通过设备管理器验证驱动安装。
 
 ### OpenOCD 配置
 
@@ -346,38 +357,27 @@ add_custom_target(flash
 
 ### 烧录步骤
 
-#### 步骤 1：确认硬件连接
+#### 步骤 1：确认 ST-Link 已被识别
 
-```bash
-# 检查 ST-Link 是否被识别
-lsusb | grep -i ST-LINK
+**方法一：通过设备管理器**
 
-# 预期输出：
-# Bus 001 Device 005: ID 0483:3748 STMicroelectronics ST-LINK/V2
+1. 按 `Win + X`，选择"设备管理器"
+2. 展开"通用串行总线设备"或"STMicroelectronics"
+3. 查找类似 "STLink Virtual COM Port" 或 "STMicroelectronics STLink dongle" 的条目
+
+**方法二：通过 PowerShell**
+
+```powershell
+# 检查 ST-Link 设备
+Get-PnpDevice | Where-Object { $_.FriendlyName -like "*ST-LINK*" }
 ```
 
-#### 步骤 2：设置 USB 权限（如需要）
+预期应看到状态为 `OK` 的 ST-Link 设备。
 
-**Linux 原生系统**：
+#### 步骤 2：执行烧录
 
-```bash
-# 如果已配置 udev 规则，跳过此步骤
-# 否则临时设置权限：
-sudo chmod 666 /dev/bus/usb/$(lsusb | grep -i "ST-LINK" | awk '{print $2}')/$(lsusb | grep -i "ST-LINK" | awk '{print $4}' | sed 's/://')
-```
-
-**WSL 用户**：
-
-```bash
-# 使用项目提供的脚本
-cd /path/to/ST-Forge/project/0_template
-./chmod_usb.sh
-```
-
-#### 步骤 3：执行烧录
-
-```bash
-# 在 build 目录中执行
+```cmd
+:: 在 build 目录中执行
 make flash
 ```
 
@@ -401,7 +401,7 @@ xPSR: 0x01000000 pc: 0x08000134
 ** Verified OK **
 ```
 
-#### 步骤 4：验证烧录结果
+#### 步骤 3：验证烧录结果
 
 烧录成功后，开发板会自动复位运行程序。观察开发板上的 LED 或串口输出验证程序是否正常运行。
 
@@ -409,8 +409,8 @@ xPSR: 0x01000000 pc: 0x08000134
 
 如需完全擦除芯片 Flash：
 
-```bash
-# 在 build 目录中执行
+```cmd
+:: 在 build 目录中执行
 make erase
 ```
 
@@ -426,21 +426,22 @@ stm32f1x mass erase complete
 
 ### 手动烧录（不使用 make）
 
-如果需要手动执行烧录命令：
+如果需要手动执行烧录命令，注意在 Windows 上 OpenOCD 可能需要使用完整路径：
 
-```bash
-# 手动烧录
-openocd -f interface/stlink.cfg -f target/stm32f1x.cfg \
-    -c "program STM32F1.bin verify reset exit 0x08000000"
+```cmd
+:: 手动烧录（如果 openocd 已加入 PATH，可直接使用）
+openocd -f interface/stlink.cfg -f target/stm32f1x.cfg -c "program STM32F1.bin verify reset exit 0x08000000"
 
-# 手动擦除
-openocd -f interface/stlink.cfg -f target/stm32f1x.cfg \
-    -c "init; halt; stm32f1x mass_erase 0; exit"
+:: 如果 openocd 未加入 PATH，使用完整路径
+C:\Tools\openocd\bin\openocd.exe -f interface/stlink.cfg -f target/stm32f1x.cfg -c "program STM32F1.bin verify reset exit 0x08000000"
+
+:: 手动擦除
+openocd -f interface/stlink.cfg -f target/stm32f1x.cfg -c "init; halt; stm32f1x mass_erase 0; exit"
 ```
 
 ---
 
-## 🔧 常见问题排查
+## 常见问题排查
 
 ### 问题 1：ST-Link 未识别
 
@@ -452,68 +453,53 @@ Error: no device found
 ```
 
 **原因分析**：
-- USB 权限不足
 - ST-Link 驱动未安装
 - 硬件连接问题
+- USB 线缆仅支持充电（不支持数据传输）
 
 **解决方案**：
 
-```bash
-# 1. 检查设备是否连接
-lsusb | grep -i ST-LINK
+1. **检查设备管理器**
 
-# 如果能看到设备但无法访问，配置权限：
+   按 `Win + X`，选择"设备管理器"，查看是否出现带黄色感叹号的未知设备或 ST-Link 设备。
 
-# 方法一：配置 udev 规则（推荐，永久生效）
-sudo tee /etc/udev/rules.d/49-stlinkv2.rules > /dev/null << 'EOF'
-SUBSYSTEMS=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="3748", MODE:="0666"
-SUBSYSTEMS=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="374b", MODE:="0666"
-EOF
+2. **安装 ST-Link 驱动（STSW-LINK009）**
 
-sudo udevadm control --reload-rules
-sudo udevadm trigger
+   从 ST 官网下载并安装 STSW-LINK009 驱动程序。安装完成后重新插拔 ST-Link。
 
-# 方法二：临时设置权限（每次重新插拔后需重新执行）
-sudo chmod 666 /dev/bus/usb/$(lsusb | grep -i "ST-LINK" | awk '{print $2}')/$(lsusb | grep -i "ST-LINK" | awk '{print $4}' | sed 's/://')
+3. **使用 Zadig 替代驱动（备选方案）**
 
-# 重新插拔设备后重试
-```
-
-**WSL 用户额外步骤**：
-
-```bash
-# 确保 Windows 端已附加 USB 设备
-# 在 Windows PowerShell（管理员）中执行：
-usbipd wsl list
-usbipd wsl attach --busid <BUSID>
-
-# 在 WSL 中设置权限
-./chmod_usb.sh
-```
+   如果安装 ST 官方驱动后仍无法识别：
+   - 下载 [Zadig](https://zadig.akeo.ie/)
+   - 在设备列表中找到 ST-Link
+   - 将驱动替换为 **WinUSB** 或 **libusb-win32**
+   - 替换后重新尝试烧录
 
 ---
 
-### 问题 2：端口权限问题
+### 问题 2：CMake 生成器错误
 
 **症状**：
 
 ```
-Error: cannot open /dev/bus/usb/001/005: Permission denied
+CMake Error: Could not create named generator Visual Studio
 ```
+
+或生成的项目文件无法用 `make` 编译。
+
+**原因分析**：
+- 未指定 `-G "MinGW Makefiles"` 参数，CMake 默认选择了 Visual Studio 生成器
 
 **解决方案**：
 
-```bash
-# 检查当前用户组
-groups
+```cmd
+:: 必须始终指定 MinGW 生成器
+cmake -G "MinGW Makefiles" ..
 
-# 将用户添加到 plugdev 组（如果存在）
-sudo usermod -aG plugdev $USER
-
-# 注销并重新登录使更改生效
-
-# 或者使用 udev 规则（推荐）
-# 参见问题 1 的解决方案
+:: 如果 build 目录中已有错误的缓存，先清理
+rmdir /s /q build
+mkdir build && cd build
+cmake -G "MinGW Makefiles" ..
 ```
 
 ---
@@ -524,19 +510,31 @@ sudo usermod -aG plugdev $USER
 
 ```
 CMake Error: CMAKE_C_COMPILER not found
-/usr/bin/arm-none-eabi-gcc: command not found
+'arm-none-eabi-gcc' is not recognized as an internal or external command
 ```
+
+**原因分析**：
+- ARM 工具链未安装
+- 工具链未添加到系统 PATH
 
 **解决方案**：
 
-```bash
-# 检查编译器是否安装
-which arm-none-eabi-gcc
+1. **检查编译器是否在 PATH 中**
 
-# 如果未安装
-sudo apt install -y gcc-arm-none-eabi
+```cmd
+where arm-none-eabi-gcc
+```
 
-# 验证安装
+2. **如果未找到，配置 PATH 环境变量**
+
+   - 右键"此电脑" > "属性" > "高级系统设置" > "环境变量"
+   - 在"系统变量"中找到 `Path`，点击"编辑"
+   - 添加 ARM 工具链的 `bin` 目录路径，例如：`C:\Program Files (x86)\GNU Tools Arm Embedded\10.3-2021.10\bin`
+   - 点击"确定"保存，**重新打开** CMD 窗口使更改生效
+
+3. **验证安装**
+
+```cmd
 arm-none-eabi-gcc --version
 ```
 
@@ -558,16 +556,16 @@ cannot find -lc
 
 **解决方案**：
 
-```bash
-# 1. 确保 main.c 中有 main 函数
-grep "int main" main.c
+```cmd
+:: 1. 确保 main.c 中有 main 函数
+findstr "int main" main.c
 
-# 2. 检查链接脚本是否存在
-ls -la STM32F103C8TX_FLASH.ld
+:: 2. 检查链接脚本是否存在
+dir STM32F103C8TX_FLASH.ld
 
-# 3. 清理并重新编译
-rm -rf build
-mkdir build && cd build && cmake .. && make
+:: 3. 清理并重新编译
+rmdir /s /q build
+mkdir build && cd build && cmake -G "MinGW Makefiles" .. && make
 ```
 
 ---
@@ -586,18 +584,18 @@ fatal error: stm32f1xx_hal.h: No such file or directory
 
 **解决方案**：
 
-```bash
-# 初始化并更新子模块
-cd /path/to/ST-Forge
+```cmd
+:: 初始化并更新子模块
+cd C:\path\to\ST-Forge
 git submodule update --init --recursive
 
-# 检查 HAL 库是否存在
-ls third_party/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Inc/
+:: 检查 HAL 库是否存在
+dir third_party\STM32CubeF1\Drivers\STM32F1xx_HAL_Driver\Inc\
 
-# 重新配置并编译
-cd project/0_template
-rm -rf build
-mkdir build && cd build && cmake .. && make
+:: 重新配置并编译
+cd project\0_template
+rmdir /s /q build
+mkdir build && cd build && cmake -G "MinGW Makefiles" .. && make
 ```
 
 ---
@@ -618,22 +616,17 @@ Error: flash programming failed
 
 **解决方案**：
 
-```bash
-# 1. 尝试连接时复位
-openocd -f interface/stlink.cfg -f target/stm32f1x.cfg \
-    -c "init; reset halt; flash write_image erase STM32F1.bin 0x08000000; verify_image STM32F1.bin 0x08000000; reset run; shutdown"
-
-# 2. 检查 BOOT0 跳线位置
-# 确保 BOOT0 = 0（连接到 GND）
-
-# 3. 尝试降低 SWD 时钟速度
-# 在 OpenOCD 配置中添加：
-# adapter speed 1000
+```cmd
+:: 1. 尝试连接时复位
+openocd -f interface/stlink.cfg -f target/stm32f1x.cfg -c "init; reset halt; flash write_image erase STM32F1.bin 0x08000000; verify_image STM32F1.bin 0x08000000; reset run; shutdown"
 ```
+
+- 检查 BOOT0 跳线位置，确保 BOOT0 = 0（连接到 GND）
+- 尝试降低 SWD 时钟速度，在 OpenOCD 配置中添加：`adapter speed 1000`
 
 ---
 
-### 问题 7：CMake 配置错误
+### 问题 7：CMake 版本过低
 
 **症状**：
 
@@ -644,24 +637,15 @@ CMake Error at CMakeLists.txt:1 (cmake_minimum_required):
 
 **解决方案**：
 
-```bash
-# 检查当前 CMake 版本
+1. **检查当前 CMake 版本**
+
+```cmd
 cmake --version
-
-# 如果版本过低，安装新版本
-# Ubuntu 20.04+ 通常自带 3.16+
-
-# 方法一：使用 Kitware 官方源
-wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | sudo tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null
-sudo apt update
-sudo apt install -y cmake
-
-# 方法二：使用 pip
-pip install cmake --upgrade
-
-# 方法三：使用 snap
-sudo snap install cmake --classic
 ```
+
+2. **下载最新版本**
+
+   前往 [cmake.org](https://cmake.org/download/) 下载最新版 CMake 安装程序（`.msi` 文件），安装时勾选"Add CMake to the system PATH for all users"。
 
 ---
 
@@ -673,77 +657,95 @@ sudo snap install cmake --classic
 make: *** No targets specified and no makefile found.  Stop.
 ```
 
+或
+
+```
+'make' is not recognized as an internal or external command
+```
+
 **原因分析**：
 - 未在 build 目录中执行
 - 未运行 cmake 配置
+- make 未加入 PATH
 
 **解决方案**：
 
-```bash
-# 确保在 build 目录中
-cd /path/to/ST-Forge/project/0_template/build
+```cmd
+:: 1. 检查 make 是否可用
+where make
 
-# 如果 build 目录不存在，创建并配置
-mkdir -p build && cd build && cmake ..
+:: 如果 make 找不到，尝试使用 mingw32-make
+where mingw32-make
 
-# 然后编译
+:: 2. 确保在 build 目录中
+cd C:\path\to\ST-Forge\project\0_template\build
+
+:: 3. 如果 build 目录不存在，创建并配置
+mkdir build && cd build && cmake -G "MinGW Makefiles" ..
+
+:: 4. 然后编译（根据上一步检测结果选择 make 或 mingw32-make）
 make
+:: 或
+mingw32-make
 ```
 
 ---
 
-## 🚀 进阶技巧
+## 进阶技巧
 
 ### 增量编译
 
 CMake 支持增量编译，只重新编译修改过的文件：
 
-```bash
-# 修改源文件后，只需执行
+```cmd
+:: 修改源文件后，只需执行
 make
-
-# CMake 会自动检测修改并只编译必要的文件
 ```
+
+CMake 会自动检测修改并只编译必要的文件。
 
 ### 清理编译产物
 
-```bash
-# 清理所有编译产物
+```cmd
+:: 清理所有编译产物
 make clean
 
-# 完全清理（包括 CMake 缓存）
-rm -rf build
+:: 完全清理（包括 CMake 缓存）
+rmdir /s /q build
 ```
 
 ### 查看详细编译信息
 
-```bash
-# 显示完整编译命令
+```cmd
+:: 显示完整编译命令
 make VERBOSE=1
 ```
 
 ### 并行编译
 
-```bash
-# 使用多核并行编译（加速编译）
-make -j$(nproc)
+```cmd
+:: 使用多核并行编译（指定线程数）
+make -j4
+
+:: 自动使用所有 CPU 核心（CMD）
+make -j%NUMBER_OF_PROCESSORS%
 ```
 
 ### 查看编译数据库
 
-```bash
-# CMake 生成的 compile_commands.json 可用于 IDE 和静态分析工具
-cat build/compile_commands.json
+```cmd
+:: CMake 生成的 compile_commands.json 可用于 IDE 和静态分析工具
+type build\compile_commands.json
 ```
 
 ### 调试构建
 
-```bash
-# 查看 CMake 配置信息
+```cmd
+:: 查看 CMake 配置信息
 cmake --system-information
 
-# 查看编译器标志
-make VERBOSE=1 | grep "arm-none-eabi-gcc"
+:: 查看编译器标志
+make VERBOSE=1
 ```
 
 ### 自定义编译选项
@@ -768,7 +770,7 @@ add_compile_options(-DMY_DEFINE=123)
 
 ---
 
-## 📊 编译流程总结
+## 编译流程总结
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -809,15 +811,16 @@ add_compile_options(-DMY_DEFINE=123)
 
 ---
 
-## 📝 快速参考
+## 快速参考
 
 ### 常用命令速查
 
 | 操作 | 命令 |
 |------|------|
-| 配置项目 | `cd build && cmake ..` |
+| 配置项目 | `cd build && cmake -G "MinGW Makefiles" ..` |
 | 编译项目 | `make` |
 | 清理编译产物 | `make clean` |
+| 完全清理 | `rmdir /s /q build` |
 | 烧录固件 | `make flash` |
 | 擦除芯片 | `make erase` |
 | 查看文件大小 | `arm-none-eabi-size STM32F1.elf` |
@@ -828,25 +831,25 @@ add_compile_options(-DMY_DEFINE=123)
 
 | 文件 | 位置 |
 |------|------|
-| 源代码 | `project/0_template/*.c` |
-| 构建配置 | `project/0_template/CMakeLists.txt` |
-| 链接脚本 | `project/0_template/STM32F103C8TX_FLASH.ld` |
-| 编译产物 | `project/0_template/build/` |
+| 源代码 | `project\0_template\*.c` |
+| 构建配置 | `project\0_template\CMakeLists.txt` |
+| 链接脚本 | `project\0_template\STM32F103C8TX_FLASH.ld` |
+| 编译产物 | `project\0_template\build\` |
 
 ---
 
-## 🎉 下一步
+## 下一步
 
 恭喜您完成编译与烧录的学习！接下来建议：
 
-1. **实践调试**：继续阅读 [05-调试方法.md](./05-调试方法.md) 学习 GDB 调试
-2. **深入理解**：阅读 [03-代码详解.md](./03-代码详解.md) 理解代码逻辑
+1. **实践调试**：继续阅读 [05_debugging](./05_debugging) 学习 GDB 调试
+2. **深入理解**：阅读 [03_code_walkthrough](./03_code_walkthrough) 理解代码逻辑
 3. **修改代码**：尝试修改 main.c 并重新编译烧录
 4. **添加功能**：尝试添加新的源文件并更新 CMakeLists.txt
 
 ---
 
-## 📖 参考资料
+## 参考资料
 
 - [CMake 官方文档](https://cmake.org/documentation/)
 - [ARM GCC 工具链手册](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm)
@@ -856,4 +859,4 @@ add_compile_options(-DMY_DEFINE=123)
 
 ---
 
-**上一章**：[代码详解](./03-代码详解.md) | **下一章**：[调试方法](./05-调试方法.md)
+**上一章**：[代码详解](./03_code_walkthrough) | **下一章**：[调试方法](./05_debugging)

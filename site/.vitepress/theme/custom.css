@@ -1,0 +1,200 @@
+/* ================================================================
+   ST-Forge — Layout & typography overrides
+   Modeled on ~/Tutorial_AwesomeModernCPP. The Chinese-tuned
+   typography (generous 1.85 line-height, slightly smaller 0.82rem
+   font) is what makes dense C/embedded content read as airy rather
+   than crowded; content width is kept at a moderate 90rem so line
+   lengths stay readable.
+   ================================================================ */
+
+/* ── Chinese Typography ─────────────────────────────────────── */
+.vp-doc {
+  line-height: 1.85;
+  font-size: 0.82rem;
+}
+
+.vp-doc h1 { line-height: 1.4; }
+.vp-doc h2 { line-height: 1.45; }
+.vp-doc h3 { line-height: 1.5; }
+.vp-doc h4 { line-height: 1.55; }
+
+.vp-doc p {
+  margin-bottom: 1.2em;
+}
+
+/* ── Content Width ────────────────────────────────────────────
+   90rem (≈1440px). Kept moderate so line lengths stay readable;
+   the airier feel comes from the smaller font + 1.85 line-height
+   above. (Matches ~/Tutorial_AwesomeModernCPP.) */
+:root {
+  --vp-layout-max-width: 90rem;
+}
+
+/* ── Code Blocks ────────────────────────────────────────────── */
+.vp-doc div[class*='language-'] {
+  border-radius: 8px;
+  font-size: 0.75rem;
+  line-height: 1.6;
+}
+
+.vp-doc div[class*='language-'] code {
+  font-size: 0.75rem;
+}
+
+.vp-doc :not(pre) > code {
+  font-size: 0.78em;
+  padding: 0.15em 0.35em;
+  border-radius: 4px;
+}
+
+/* ── Tables ─────────────────────────────────────────────────── */
+.vp-doc table {
+  font-size: 0.78rem;
+  line-height: 1.6;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.vp-doc table th {
+  font-weight: 600;
+  background-color: var(--vp-c-bg-soft);
+}
+
+.vp-doc table tr:nth-child(even) {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* ── Blockquotes ────────────────────────────────────────────── */
+.vp-doc blockquote {
+  border-left: 4px solid var(--vp-c-brand-1);
+  border-radius: 0 4px 4px 0;
+  background: rgba(81, 107, 232, 0.04);
+}
+
+/* ── Links ──────────────────────────────────────────────────── */
+.vp-doc a {
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 3px;
+  transition: color 0.2s ease;
+}
+
+.vp-doc a:hover {
+  text-decoration-style: solid;
+}
+
+/* ── Images ─────────────────────────────────────────────────── */
+.vp-doc img {
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Horizontal Rules ───────────────────────────────────────── */
+.vp-doc hr {
+  border: none;
+  border-top: 1px dashed var(--vp-c-divider);
+  margin: 2.5em 0;
+  opacity: 0.6;
+}
+
+/* ── Custom Containers (::: tip / info / warning …) ─────────── */
+.vp-doc .custom-block {
+  border-radius: 8px;
+  margin: 1.2em 0;
+}
+
+/* ── Content Dark Mode ──────────────────────────────────────── */
+.dark .vp-doc blockquote {
+  background: rgba(81, 107, 232, 0.08);
+}
+
+.dark .vp-doc table tr:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.dark .vp-doc img {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* ================================================================
+   Home — Feature Cards
+   Generic visual polish (no per-card tier coloring, no entrance
+   animation) so the homepage reads as refined as the content pages.
+   ================================================================ */
+
+.VPFeatures {
+  padding-top: 16px;
+  padding-bottom: 48px;
+}
+
+.VPFeature {
+  border: 1px solid var(--vp-c-divider) !important;
+  border-radius: 14px !important;
+  background-color: var(--vp-c-bg) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04),
+              0 1px 2px rgba(0, 0, 0, 0.06);
+  transition: border-color 0.39s ease,
+              box-shadow 0.39s ease,
+              transform 0.39s ease;
+}
+
+.VPFeature.link:hover {
+  border-color: var(--vp-c-brand-1) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1),
+              0 4px 8px rgba(0, 0, 0, 0.06);
+  transform: translateY(-4px);
+}
+
+.VPFeature .box {
+  padding: 28px 24px !important;
+}
+
+.VPFeature .icon {
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 12px !important;
+  background: linear-gradient(
+    135deg,
+    var(--vp-c-brand-soft) 0%,
+    var(--vp-c-indigo-soft) 100%
+  ) !important;
+  color: var(--vp-c-brand-1) !important;
+  font-size: 22px !important;
+  transition: background 0.39s ease,
+              transform 0.39s ease;
+}
+
+.VPFeature.link:hover .icon {
+  transform: scale(1.1);
+}
+
+.VPFeature .title {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  line-height: 1.5 !important;
+  color: var(--vp-c-text-1) !important;
+  transition: color 0.39s ease;
+}
+
+.VPFeature.link:hover .title {
+  color: var(--vp-c-brand-1) !important;
+}
+
+.VPFeature .details {
+  font-size: 13px !important;
+  line-height: 1.7 !important;
+  color: var(--vp-c-text-2) !important;
+  font-weight: 400 !important;
+}
+
+.dark .VPFeature {
+  background-color: var(--vp-c-bg-elv) !important;
+  border-color: var(--vp-c-border) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2),
+              0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.dark .VPFeature.link:hover {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3),
+              0 4px 8px rgba(0, 0, 0, 0.2);
+}

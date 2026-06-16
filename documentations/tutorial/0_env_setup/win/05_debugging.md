@@ -4,7 +4,7 @@
 
 ---
 
-## 📋 目录
+## 目录
 
 - [调试环境配置](#调试环境配置)
 - [已知问题与修复](#已知问题与修复)
@@ -17,7 +17,7 @@
 
 ---
 
-## 🔧 调试环境配置
+## 调试环境配置
 
 ### 硬件要求
 
@@ -45,26 +45,32 @@
 
 #### 2. 安装 OpenOCD
 
-**Linux (Ubuntu/Debian):**
-```bash
-sudo apt update
-sudo apt install openocd
-```
+**Windows 手动安装：**
 
-**macOS:**
-```bash
-brew install openocd
-```
+1. 从 xPack OpenOCD GitHub Releases 页面下载最新版本：
+   - 访问 [xPack OpenOCD Releases](https://github.com/xpack-dev-tools/openocd-xpack/releases/)
+   - 下载 `xpack-openocd-<version>-win32-x64.zip`
 
-**Windows:**
-从 [OpenOCD 官网](https://openocd.org/) 下载预编译版本，或使用 MSYS2：
-```bash
-pacman -S mingw-w64-x86_64-openocd
-```
+2. 解压到目标目录：
+   - 建议解压到 `C:\Tools\openocd`
+   - 解压后目录结构应为 `C:\Tools\openocd\bin\openocd.exe`
+
+3. 添加到系统 PATH：
+   - 打开 "系统属性" → "高级" → "环境变量"
+   - 在 "系统变量" 中找到 `Path`，点击 "编辑"
+   - 添加新路径：`C:\Tools\openocd\bin`
+   - 点击 "确定" 保存
+
+> **提示**：也可以在 VSCode 集成终端中使用 PowerShell 快速添加用户 PATH：
+> ```powershell
+> # 仅对当前用户生效
+> [Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Tools\openocd\bin", "User")
+> ```
+> 添加后需要重启 VSCode 才能生效。
 
 #### 3. 验证安装
 
-```bash
+```powershell
 # 检查 OpenOCD 版本
 openocd --version
 
@@ -85,11 +91,11 @@ ST-Link V2          Blue Pill
   3.3V     <───>      3.3V (可选，用于供电)
 ```
 
-> **⚠️ 注意**：确保 Blue Pill 的 BOOT0 跳线设置为 0（接地），否则无法进入调试模式。
+> **注意**：确保 Blue Pill 的 BOOT0 跳线设置为 0（接地），否则无法进入调试模式。
 
 ---
 
-## ⚠️ 已知问题与修复
+## 已知问题与修复
 
 ### launch.json 配置错误
 
@@ -107,7 +113,7 @@ ST-Link V2          Blue Pill
             "request": "launch",
             "servertype": "openocd",
             "cwd": "${workspaceRoot}",
-            "executable": "build/STM32Demo.elf",  // ❌ 错误：文件不存在
+            "executable": "build/STM32Demo.elf",  // 错误：文件不存在
             "configFiles": [
                 "interface/stlink.cfg",
                 "target/stm32f1x.cfg"
@@ -131,7 +137,7 @@ ST-Link V2          Blue Pill
             "request": "launch",
             "servertype": "openocd",
             "cwd": "${workspaceRoot}",
-            "executable": "build/STM32F1.elf",  // ✅ 正确：实际生成的文件名
+            "executable": "build/STM32F1.elf",  // 正确：实际生成的文件名
             "configFiles": [
                 "interface/stlink.cfg",
                 "target/stm32f1x.cfg"
@@ -146,22 +152,22 @@ ST-Link V2          Blue Pill
 ### 修复步骤
 
 1. **打开配置文件**
-   ```bash
+   ```powershell
    # 在项目根目录下
    code .vscode/launch.json
    ```
 
 2. **修改可执行文件路径**
-   - 将 `"executable": "build/STM32Demo.elf"` 
+   - 将 `"executable": "build/STM32Demo.elf"`
    - 改为 `"executable": "build/STM32F1.elf"`
 
 3. **保存文件**
    - 按 `Ctrl+S` 保存
 
 4. **验证修复**
-   ```bash
+   ```powershell
    # 确认 ELF 文件存在
-   ls -la build/STM32F1.elf
+   dir build\STM32F1.elf
    ```
 
 ### 为什么会出现这个问题？
@@ -172,18 +178,55 @@ ST-Link V2          Blue Pill
 | **文件名来源** | `STM32F1.elf` 由 `project(STM32F1 ...)` 定义生成 |
 | **影响** | 调试器无法找到可执行文件，导致启动失败 |
 
+### Cortex-Debug 路径配置
+
+在 Windows 上，Cortex-Debug 需要找到 `arm-none-eabi-gdb` 和 `openocd` 的可执行文件。如果路径配置不正确，调试会话将无法启动。
+
+#### 首选方案：使用系统 PATH（推荐）
+
+确保 ARM GCC 工具链和 OpenOCD 的 `bin` 目录已加入系统 PATH（参见 [01-环境配置](./01_environment_setup)）。Cortex-Debug 会自动在 PATH 中查找 `arm-none-eabi-gdb` 和 `openocd`。
+
+验证 PATH 配置：
+```powershell
+# 确认工具链和 OpenOCD 在 PATH 中可用
+arm-none-eabi-gdb --version
+openocd --version
+```
+
+如果两个命令都能正常输出版本信息，Cortex-Debug 即可自动找到它们，无需额外配置。
+
+#### 备用方案：手动指定路径
+
+如果 PATH 方式不生效（例如 VSCode 未重启、PATH 未正确加载），可以在 VSCode 的 `settings.json` 中手动指定路径：
+
+1. 按 `Ctrl+Shift+P`，输入 "Open User Settings (JSON)"
+2. 添加以下配置：
+
+```json
+{
+    "cortex-debug.armToolchainPath": "C:/Tools/gcc-arm/bin",
+    "cortex-debug.openOCDPath": "C:/Tools/openocd/bin/openocd.exe"
+}
+```
+
+> **重要提示**：
+> - 路径必须使用正斜杠（`/`）或双反斜杠（`\\`）。单反斜杠（`\`）在 JSON 中是转义字符，会导致路径解析失败。
+> - 正确写法：`C:/Tools/gcc-arm/bin` 或 `C:\\Tools\\gcc-arm\\bin`
+> - 错误写法：`C:\Tools\gcc-arm\bin`
+> - 如果使用工作区级别的 settings.json，路径应使用 `${workspaceFolder}` 变量保持可移植性。
+
 ---
 
-## 🚀 启动调试会话
+## 启动调试会话
 
 ### 前置条件
 
 在启动调试之前，确保：
 
-1. ✅ 项目已编译（存在 `build/STM32F1.elf`）
-2. ✅ 调试器已连接（ST-Link/J-Link）
-3. ✅ 目标板已供电
-4. ✅ launch.json 配置正确
+1. 项目已编译（存在 `build/STM32F1.elf`）
+2. 调试器已连接（ST-Link/J-Link）
+3. 目标板已供电
+4. launch.json 配置正确
 
 ### 启动步骤
 
@@ -202,29 +245,33 @@ ST-Link V2          Blue Pill
 ### 调试启动流程
 
 ```
-┌─────────────────┐
-│  按 F5 启动     │
-└────────┬────────┘
-         ▼
-┌─────────────────┐
-│ VSCode 读取     │
-│ launch.json     │
-└────────┬────────┘
-         ▼
-┌─────────────────┐
-│ 启动 OpenOCD    │
-│ 连接调试器      │
-└────────┬────────┘
-         ▼
-┌─────────────────┐
-│ 加载 ELF 文件   │
-│ 到 GDB          │
-└────────┬────────┘
-         ▼
-┌─────────────────┐
-│ 程序停在 main() │
-│ 等待用户操作    │
-└─────────────────┘
++------------------+
+|  按 F5 启动      |
++--------+---------+
+         |
+         v
++------------------+
+| VSCode 读取      |
+| launch.json      |
++--------+---------+
+         |
+         v
++------------------+
+| 启动 OpenOCD     |
+| 连接调试器       |
++--------+---------+
+         |
+         v
++------------------+
+| 加载 ELF 文件    |
+| 到 GDB           |
++--------+---------+
+         |
+         v
++------------------+
+| 程序停在 main()  |
+| 等待用户操作     |
++------------------+
 ```
 
 ### 启动成功标志
@@ -238,7 +285,7 @@ ST-Link V2          Blue Pill
 
 ---
 
-## 🎯 断点调试
+## 断点调试
 
 ### 设置断点
 
@@ -247,13 +294,13 @@ ST-Link V2          Blue Pill
 在代码编辑器中，点击行号左侧的空白区域，会出现一个红色圆点，表示断点已设置。
 
 ```
-  45 │     HAL_Init();
-  46 │     SystemClock_Config();
-  47 │     MX_GPIO_Init();
-🔴48 │     MX_USART1_UART_Init();  // ← 点击这里设置断点
-  49 │ 
-  50 │     while (1)
-  51 │     {
+  45 |     HAL_Init();
+  46 |     SystemClock_Config();
+  47 |     MX_GPIO_Init();
+  48 |     MX_USART1_UART_Init();  // <-- 点击这里设置断点
+  49 |
+  50 |     while (1)
+  51 |     {
 ```
 
 #### 方法 2：右键菜单
@@ -268,12 +315,12 @@ ST-Link V2          Blue Pill
 
 ### 断点类型
 
-| 类型 | 图标 | 说明 |
-|------|------|------|
-| **普通断点** | 🔴 红色圆点 | 程序执行到此暂停 |
-| **条件断点** | 🔴 红色圆点 + "?" | 满足条件时暂停 |
-| **日志断点** | 💬 菱形 | 输出日志但不暂停 |
-| **禁用断点** | ⚪ 空心圆点 | 断点已禁用 |
+| 类型 | 说明 |
+|------|------|
+| **普通断点** | 红色圆点，程序执行到此暂停 |
+| **条件断点** | 红色圆点带条件，满足条件时暂停 |
+| **日志断点** | 菱形图标，输出日志但不暂停 |
+| **禁用断点** | 空心圆点，断点已禁用 |
 
 ### 设置条件断点
 
@@ -296,7 +343,7 @@ ST-Link V2          Blue Pill
 
 ---
 
-## 🎮 调试控制
+## 调试控制
 
 ### 基本操作
 
@@ -313,11 +360,11 @@ ST-Link V2          Blue Pill
 
 ```
 当前代码：
-    48 │     MX_USART1_UART_Init();  // ← 当前位置
-    49 │ 
-    50 │     while (1)
-    51 │     {
-    52 │         HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+    48 |     MX_USART1_UART_Init();  // <-- 当前位置
+    49 |
+    50 |     while (1)
+    51 |     {
+    52 |         HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 
 操作：按 F10 (Step Over)
 结果：执行 MX_USART1_UART_Init()，然后停在第 50 行
@@ -329,21 +376,21 @@ ST-Link V2          Blue Pill
 ### 调试工具栏
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│ ▶️  ⏭️  ⏬  ⏫  🔄  ⏹️                                   │
-│ │   │   │   │   │   │                                   │
-│ │   │   │   │   │   └── 停止调试                        │
-│ │   │   │   │   └────── 重启调试                        │
-│ │   │   │   └────────── 单步返回                        │
-│ │   │   └────────────── 单步进入                        │
-│ │   └────────────────── 单步跳过                        │
-│ └────────────────────── 继续运行                        │
-└─────────────────────────────────────────────────────────┘
++----------------------------------------------------------+
+| >   >>   v   ^   @   X                                   |
+| |   |    |   |   |   |                                   |
+| |   |    |   |   |   +-- 停止调试                        |
+| |   |    |   |   +------ 重启调试                        |
+| |   |    |   +---------- 单步返回                        |
+| |   |    +-------------- 单步进入                        |
+| |   +------------------- 单步跳过                        |
+| +----------------------- 继续运行                        |
++----------------------------------------------------------+
 ```
 
 ---
 
-## 👀 变量监视与寄存器查看
+## 变量监视与寄存器查看
 
 ### 变量面板
 
@@ -356,11 +403,11 @@ ST-Link V2          Blue Pill
 ```c
 // 在断点处暂停时
 void blink_led(void) {
-    uint32_t counter = 0;      // ← Locals 区域显示
-    GPIO_PinState state;       // ← Locals 区域显示
-    
+    uint32_t counter = 0;      // <-- Locals 区域显示
+    GPIO_PinState state;       // <-- Locals 区域显示
+
     while (1) {
-        counter++;             // ← 值会实时更新
+        counter++;             // <-- 值会实时更新
         ...
     }
 }
@@ -440,17 +487,17 @@ void blink_led(void) {
 
 ```
 Peripherals
-├── GPIOA
-│   ├── CRL: 0x44444444
-│   ├── CRH: 0x44444444
-│   ├── IDR: 0x0000FFFF
-│   ├── ODR: 0x00000000
-│   └── ...
++-- GPIOA
+    +-- CRL: 0x44444444
+    +-- CRH: 0x44444444
+    +-- IDR: 0x0000FFFF
+    +-- ODR: 0x00000000
+    +-- ...
 ```
 
 ---
 
-## 💡 调试技巧
+## 调试技巧
 
 ### 1. LED 视觉调试
 
@@ -460,9 +507,9 @@ Peripherals
 // 在关键位置切换 LED
 void critical_function(void) {
     LED_ON();  // 进入函数
-    
+
     // ... 执行关键代码 ...
-    
+
     LED_OFF(); // 函数完成
 }
 ```
@@ -513,26 +560,45 @@ int __io_putchar(int ch) {
 // 在关键位置输出调试信息
 void process_data(uint8_t *data, uint32_t len) {
     printf("Processing %lu bytes\r\n", len);
-    
+
     for (uint32_t i = 0; i < len; i++) {
         printf("data[%lu] = 0x%02X\r\n", i, data[i]);
     }
-    
+
     printf("Processing complete\r\n");
 }
 ```
 
-#### 查看串口输出
+#### 查看串口输出（Windows）
 
-使用串口终端工具（如 minicom、screen、PuTTY）：
+**步骤一：确认 COM 端口号**
 
-```bash
-# Linux/macOS
-minicom -D /dev/ttyUSB0 -b 115200
+1. 将 USB 转串口模块连接到电脑
+2. 右键点击 "开始" 菜单，选择 "设备管理器"
+3. 展开 "端口 (COM 和 LPT)" 节点
+4. 找到对应的 COM 端口号（例如 `COM3`、`COM4` 等）
 
-# 或使用 screen
-screen /dev/ttyUSB0 115200
-```
+> **提示**：如果设备管理器中看不到 COM 端口，或者显示为带黄色感叹号的未知设备，说明需要安装 USB 转串口驱动（通常是 CH340 或 CP2102 驱动）。
+
+**步骤二：使用串口终端工具**
+
+以下任选其一：
+
+**PuTTY（推荐）**
+
+1. 下载并安装 [PuTTY](https://www.putty.org/)
+2. 打开 PuTTY，选择 "Serial" 连接类型
+3. 设置参数：
+   - Serial line：`COM3`（替换为实际端口号）
+   - Speed：`115200`
+4. 点击 "Open" 打开连接
+
+**Tera Term（备选）**
+
+1. 下载并安装 [Tera Term](https://ttssh2.osdn.jp/)
+2. 打开 Tera Term，选择 "Serial" 连接
+3. 选择对应的 COM 端口
+4. 在 "Setup" → "Serial port" 中设置波特率为 `115200`
 
 ### 3. 断言检查
 
@@ -545,7 +611,7 @@ void set_gpio_pin(GPIO_TypeDef *GPIOx, uint16_t Pin) {
     // 检查参数有效性
     assert(GPIOx != NULL);
     assert(Pin < 16);
-    
+
     // ... 设置 GPIO ...
 }
 ```
@@ -578,12 +644,12 @@ void init_watchdog(void) {
 // 在主循环中喂狗
 while (1) {
     HAL_IWDG_Refresh(&hiwdg);  // 喂狗
-    
+
     // ... 主循环代码 ...
 }
 ```
 
-> **💡 提示**：如果程序卡死在看门狗复位，说明主循环中有阻塞代码。
+> **提示**：如果程序卡死在看门狗复位，说明主循环中有阻塞代码。
 
 ### 5. 内存调试
 
@@ -597,10 +663,10 @@ while (1) {
 uint32_t get_stack_usage(void) {
     extern uint32_t _estack;  // 栈顶地址
     extern uint32_t _Min_Stack_Size;
-    
+
     uint32_t sp;
     __asm volatile ("mov %0, sp" : "=r" (sp));
-    
+
     return (_estack - sp);
 }
 ```
@@ -612,7 +678,7 @@ uint32_t get_stack_usage(void) {
 void check_heap(void) {
     extern uint32_t _end;
     extern uint32_t _Heap_Limit;
-    
+
     printf("Heap start: 0x%08lX\r\n", (uint32_t)&_end);
     printf("Heap limit: 0x%08lX\r\n", (uint32_t)&_Heap_Limit);
 }
@@ -620,41 +686,45 @@ void check_heap(void) {
 
 ---
 
-## 🔍 故障排查流程
+## 故障排查流程
 
 ### 调试无法启动
 
 #### 问题诊断流程图
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│ 调试无法启动                                             │
-└─────────────────────┬───────────────────────────────────┘
-                      ▼
-┌─────────────────────────────────────────────────────────┐
-│ 检查硬件连接                                            │
-│ - ST-Link 是否正确连接？                                │
-│ - 目标板是否供电？                                      │
-│ - BOOT0 是否为 0？                                      │
-└─────────────────────┬───────────────────────────────────┘
-                      ▼
-┌─────────────────────────────────────────────────────────┐
-│ 检查 OpenOCD                                            │
-│ - openocd --version 是否正常？                          │
-│ - 是否有其他 OpenOCD 进程占用？                         │
-└─────────────────────┬───────────────────────────────────┘
-                      ▼
-┌─────────────────────────────────────────────────────────┐
-│ 检查 ELF 文件                                           │
-│ - build/STM32F1.elf 是否存在？                          │
-│ - launch.json 路径是否正确？                            │
-└─────────────────────┬───────────────────────────────────┘
-                      ▼
-┌─────────────────────────────────────────────────────────┐
-│ 检查 VSCode 扩展                                        │
-│ - Cortex-Debug 是否已安装？                             │
-│ - 是否有版本冲突？                                      │
-└─────────────────────────────────────────────────────────┘
++----------------------------------------------------------+
+| 调试无法启动                                              |
++---------------------------+------------------------------+
+                            |
+                            v
++----------------------------------------------------------+
+| 检查硬件连接                                              |
+| - ST-Link 是否正确连接？                                  |
+| - 目标板是否供电？                                        |
+| - BOOT0 是否为 0？                                        |
++---------------------------+------------------------------+
+                            |
+                            v
++----------------------------------------------------------+
+| 检查 OpenOCD                                              |
+| - openocd --version 是否正常？                            |
+| - 是否有其他 OpenOCD 进程占用？                           |
++---------------------------+------------------------------+
+                            |
+                            v
++----------------------------------------------------------+
+| 检查 ELF 文件                                             |
+| - build\STM32F1.elf 是否存在？                            |
+| - launch.json 路径是否正确？                              |
++---------------------------+------------------------------+
+                            |
+                            v
++----------------------------------------------------------+
+| 检查 VSCode 扩展                                          |
+| - Cortex-Debug 是否已安装？                               |
+| - 是否有版本冲突？                                        |
++----------------------------------------------------------+
 ```
 
 #### 常见错误及解决
@@ -695,10 +765,15 @@ void HardFault_Handler(void) {
 
 #### OpenOCD 连接测试
 
-```bash
+```powershell
 # 手动启动 OpenOCD 测试连接
 openocd -f interface/stlink.cfg -f target/stm32f1x.cfg
 ```
+
+> **注意**：如果 openocd 不在当前目录的 PATH 中，需要使用完整路径：
+> ```powershell
+> C:\Tools\openocd\bin\openocd.exe -f interface/stlink.cfg -f target/stm32f1x.cfg
+> ```
 
 成功输出示例：
 ```
@@ -711,22 +786,40 @@ Info : stm32f1x.cpu: hardware has 6 breakpoints, 4 watchpoints
 Info : starting gdb server for stm32f1x.cpu on 3333
 ```
 
-#### 权限问题（Linux）
+#### Windows 驱动问题排查
 
-```bash
-# 添加 udev 规则
-sudo tee /etc/udev/rules.d/99-stlink.rules << EOF
-SUBSYSTEM=="usb", ATTR{idVendor}=="0483", ATTR{idProduct}=="3748", MODE="0666"
-EOF
+在 Windows 上，ST-Link 调试器需要正确的 USB 驱动才能被 OpenOCD 识别。
 
-# 重新加载规则
-sudo udevadm control --reload-rules
-sudo udevadm trigger
-```
+**步骤一：检查设备管理器中的驱动状态**
+
+1. 右键点击 "开始" 菜单，选择 "设备管理器"
+2. 查看 "通用串行总线控制器" 或 "STMicroelectronics" 节点
+3. 正常状态应显示 "STMicroelectronics STLink dongle" 或类似名称
+4. 如果显示黄色感叹号或 "未知设备"，说明驱动有问题
+
+**步骤二：安装 ST-Link 官方驱动**
+
+1. 访问 [STSW-LINK009 页面](https://www.st.com/en/development-tools/stsw-link009.html)
+2. 下载并安装 ST-Link USB 驱动
+3. 安装完成后，重新插拔 ST-Link USB
+4. 在设备管理器中确认设备正常识别
+
+**步骤三：克隆板使用 Zadig（如需要）**
+
+部分 ST-Link 克隆板使用不同的 USB 芯片，可能需要使用 [Zadig](https://zadig.akeo.ie/) 安装 WinUSB 驱动：
+
+1. 下载并运行 Zadig
+2. 在 "Options" 菜单中勾选 "List All Devices"
+3. 从下拉列表中选择 ST-Link 设备
+4. 将驱动设置为 **WinUSB**
+5. 点击 "Replace Driver" 或 "Install Driver"
+6. 完成后重新插拔 ST-Link
+
+> **警告**：使用 Zadig 替换驱动后，ST-Link 官方工具（如 ST-Link Utility）可能无法识别该设备。如需恢复，请重新安装 STSW-LINK009 驱动。
 
 ---
 
-## ❓ 常见问题
+## 常见问题
 
 ### Q1: 调试时程序不暂停在断点？
 
@@ -776,6 +869,8 @@ volatile uint32_t debug_counter;
 "swdClock": 4000,  // 4 MHz
 ```
 
+> **Windows 路径注意**：确保 launch.json 中所有路径使用正斜杠（`/`）或 `${workspaceFolder}` 变量，避免使用反斜杠。
+
 ### Q5: 如何查看汇编代码？
 
 在调试暂停时：
@@ -798,7 +893,7 @@ void EXTI0_IRQHandler(void) {
 
 ---
 
-## 📚 进阶主题
+## 进阶主题
 
 ### RTOS 调试
 
@@ -845,7 +940,7 @@ printf("Debug message\r\n");
 
 ---
 
-## 📖 参考资料
+## 参考资料
 
 - [Cortex-Debug 扩展文档](https://github.com/Marus/cortex-debug)
 - [OpenOCD 官方文档](https://openocd.org/documentation/)
@@ -854,21 +949,21 @@ printf("Debug message\r\n");
 
 ---
 
-## 📝 总结
+## 总结
 
 本章介绍了 STM32F103C8T6 项目的调试方法，包括：
 
 | 内容 | 要点 |
 |------|------|
-| **环境配置** | Cortex-Debug 扩展、OpenOCD 安装 |
-| **已知问题** | launch.json 可执行文件路径错误 |
+| **环境配置** | Cortex-Debug 扩展、OpenOCD 手动安装与 PATH 配置 |
+| **已知问题** | launch.json 可执行文件路径错误、Cortex-Debug 路径配置 |
 | **断点调试** | 设置断点、单步执行、继续运行 |
 | **变量监视** | 局部变量、全局变量、寄存器查看 |
-| **调试技巧** | LED 调试、printf 调试、断言检查 |
-| **故障排查** | 连接问题、Hard Fault、权限问题 |
+| **调试技巧** | LED 调试、printf 串口调试（PuTTY/Tera Term）、断言检查 |
+| **故障排查** | 连接问题、Hard Fault、Windows 驱动问题 |
 
 ---
 
-**下一章**：[06-STM32基础概念.md](./06-STM32基础概念.md) - 深入了解 STM32 架构和外设。
+**上一章**：[编译与烧录](./04_build_and_flash)
 
-**上一章**：[04-编译与烧录.md](./04-编译与烧录.md) - 学习编译和烧录流程。
+**下一章**：[STM32基础概念](./06_stm32_basics)
